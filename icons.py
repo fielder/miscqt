@@ -187,10 +187,10 @@ s = QtGui.QScrollArea(win)
 
 WIDTH = 10
 
+# I'd like to just add a grid layout as the main widget in a window or
+# scrollarea, but they seem to require widgets. So, I have to make a
+# wrapper widget here. Maybe there's a better way...
 class FW(QtGui.QWidget):
-    """I'd like to just add a grid layout as the main widget in a window
-    or scrollarea, but they seem to require widgets.  So, I have to make
-    a wrapper widget here. Maybe there's a better way..."""
 
     def copyToClipboard(self):
         text = self.sender().toolTip()
@@ -199,7 +199,10 @@ class FW(QtGui.QWidget):
     def __init__(self):
         QtGui.QWidget.__init__(self)
 
-        g = QtGui.QGridLayout(self)
+        vbox = QtGui.QVBoxLayout(self)
+        txt = QtGui.QLabel("Click a button to copy its path to the clip-board")
+
+        g = QtGui.QGridLayout()
 
         row = 0
         col = 0
@@ -217,8 +220,12 @@ class FW(QtGui.QWidget):
                 col = 0
                 row += 1
 
+        vbox.addWidget(txt)
+        vbox.addLayout(g)
+
 s.setWidget(FW())
 
 win.setCentralWidget(s)
+win.setWindowTitle("PyQT built-in icon browser")
 win.show()
 sys.exit(app.exec_())
