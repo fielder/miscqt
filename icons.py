@@ -192,6 +192,10 @@ class FW(QtGui.QWidget):
     or scrollarea, but they seem to require widgets.  So, I have to make
     a wrapper widget here. Maybe there's a better way..."""
 
+    def copyToClipboard(self):
+        text = self.sender().toolTip()
+        app.clipboard().setText(text)
+
     def __init__(self):
         QtGui.QWidget.__init__(self)
 
@@ -204,6 +208,7 @@ class FW(QtGui.QWidget):
 
             w.setIcon(QtGui.QIcon(path))
             w.setToolTip(path)
+            self.connect(w, QtCore.SIGNAL("clicked()"), self.copyToClipboard)
 
             g.addWidget(w, row, col, 1, 1)
 
