@@ -203,7 +203,7 @@ class FW(QtGui.QWidget):
             w = QtGui.QToolButton()
 
             w.setIcon(QtGui.QIcon(path))
-            w.setText(path)
+            w.setToolTip(path)
 
             g.addWidget(w, row, col, 1, 1)
 
