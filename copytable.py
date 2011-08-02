@@ -29,19 +29,15 @@ class CopyableQTableWidget(QtGui.QTableWidget):
         min_col = 9999999
         max_col = -9999999
         for item in self.selectedItems():
-            if item.row() < min_row:
-                min_row = item.row()
-            if item.row() > max_row:
-                max_row = item.row()
-            if item.column() < min_col:
-                min_col = item.column()
-            if item.column() > max_col:
-                max_col = item.column()
+            min_row = min(min_row, item.row())
+            max_row = max(max_row, item.row())
+            min_col = min(min_col, item.col())
+            max_col = max(max_col, item.col())
         num_rows = (max_row - min_row) + 1
         num_cols = (max_col - min_col) + 1
 
         # Make a table containing the selected items in correct
-        #  locations, None if a cell isn't selected.
+        # locations, None if a cell isn't selected.
         selected_items = [] # list of rows
         for i in xrange(num_rows):
             selected_items.append([None for j in xrange(num_cols)])
@@ -64,4 +60,3 @@ class CopyableQTableWidget(QtGui.QTableWidget):
             text += self.ROW_SEPARATOR
 
         QtGui.QApplication.clipboard().setText(text)
-
