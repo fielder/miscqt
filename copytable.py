@@ -31,8 +31,8 @@ class CopyableQTableWidget(QtGui.QTableWidget):
         for item in self.selectedItems():
             min_row = min(min_row, item.row())
             max_row = max(max_row, item.row())
-            min_col = min(min_col, item.col())
-            max_col = max(max_col, item.col())
+            min_col = min(min_col, item.column())
+            max_col = max(max_col, item.column())
         num_rows = (max_row - min_row) + 1
         num_cols = (max_col - min_col) + 1
 
