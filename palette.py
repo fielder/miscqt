@@ -108,11 +108,11 @@ class IndexedColorPicker(QtGui.QWidget):
 
         # text labels
         self._labels = collections.OrderedDict()
-        self._labels["index"] = ("Index:", QtGui.QLabel("Index:"))
-        self._labels["red"]   = ("Red:",   QtGui.QLabel("Red:"))
-        self._labels["green"] = ("Green:", QtGui.QLabel("Green:"))
-        self._labels["blue"]  = ("Blue:",  QtGui.QLabel("Blue:"))
-        for lstart, l in self._labels.itervalues():
+        self._labels["index"] = QtGui.QLabel("Index:")
+        self._labels["red"]   = QtGui.QLabel("Red:")
+        self._labels["green"] = QtGui.QLabel("Green:")
+        self._labels["blue"]  = QtGui.QLabel("Blue:")
+        for l in self._labels.itervalues():
             vbox.addWidget(l)
 
         vbox.addStretch()
@@ -126,26 +126,20 @@ class IndexedColorPicker(QtGui.QWidget):
     def selected(self):
         return (self._buttongroup.checkedId(), self._buttongroup.checkedButton().color())
 
-    def _setupLabels(self, label_strings):
-        if not label_strings:
-            for lstart, l in self._labels.itervalues():
-                l.setText(lstart)
-        else:
-            for labelname, newval in label_strings.iteritems():
-                lstart, l = self._labels[labelname]
-                l.setText("%s %s" % (lstart, str(newval)))
-
     def _cellHovered(self, is_on):
-        if is_on and self.sender().color():
-            l = {}
-            l["index"] = self._buttongroup.id(self.sender())
-            l["red"]   = self.sender().color().red()
-            l["green"] = self.sender().color().green()
-            l["blue"]  = self.sender().color().blue()
-            self._setupLabels(l)
-            self._preview.setColor(self.sender().color())
+        color = self.sender().color()
+        idx = self._buttongroup.id(self.sender())
+        if is_on and color:
+            self._labels["index"].setText("Index: %d" % idx)
+            self._labels["red"].setText("Red: %d" % color.red())
+            self._labels["green"].setText("Green: %d" % color.green())
+            self._labels["blue"].setText("Blue: %d" % color.blue())
+            self._preview.setColor(color)
         else:
-            self._setupLabels(None)
+            self._labels["index"].setText("Index:")
+            self._labels["red"].setText("Red:")
+            self._labels["green"].setText("Green:")
+            self._labels["blue"].setText("Blue:")
             self._preview.clearColor()
 
 
