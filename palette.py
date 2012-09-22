@@ -59,17 +59,22 @@ class EditableRGBColorCell(ColorCell):
             super(EditableRGBColorCell, self).mouseReleaseEvent(ev)
 
 
-class ReadOnlyColorCell(ColorCell):
+class _ReadOnlyColorCell(ColorCell):
     def mousePressEvent(self, ev):
         ev.ignore()
 
 
-class PaletteColorCell(ColorCell):
+class _SmallSelectColorCell(ColorCell):
     def sizeHint(self):
         return QtCore.QSize(32, 32)
 
 
-class _PreviewCell(ReadOnlyColorCell):
+class _SmallEditColorCell(EditableRGBColorCell):
+    def sizeHint(self):
+        return QtCore.QSize(32, 32)
+
+
+class _PreviewCell(_ReadOnlyColorCell):
     def sizeHint(self):
         return QtCore.QSize(128, 128)
 
@@ -81,6 +86,10 @@ class IndexedColorPicker(QtGui.QWidget):
     """
 
     def __init__(self, colors={}, parent=None):
+        """
+        Colors is a dict of QColors, keyed by its index.
+        """
+
         super(IndexedColorPicker, self).__init__(parent=parent)
 
         # main color grid
@@ -90,9 +99,9 @@ class IndexedColorPicker(QtGui.QWidget):
             for c in xrange(16):
                 coloridx = r * 16 + c
 
-                cell = PaletteColorCell(color=colors.get(coloridx))
+                cell = _SmallSelectColorCell(color=colors.get(coloridx))
                 cell.setCheckable(True)
-                if (r, c) == (0, 0):
+                if coloridx == 0:
                     cell.setChecked(True)
                 cell.hovered.connect(self._cellHovered)
 
@@ -143,6 +152,73 @@ class IndexedColorPicker(QtGui.QWidget):
             self._preview.clearColor()
 
 
+class RGBPaletteEditor(QtGui.QWidget):
+    """
+    A interface to show a 256-color palette, all colors are editable.
+    """
+
+    def __init__(self, colors={}, parent=None):
+        """
+        Colors is a dict of QColors, keyed by its index.
+        """
+
+        super(RGBPaletteEditor, self).__init__(parent=parent)
+
+        # main color grid
+        self._grid = QtGui.QGridLayout()
+        for r in xrange(16):
+            for c in xrange(16):
+                cell = _SmallEditColorCell(color=colors.get(r * 16 + c))
+                cell.hovered.connect(self._cellHovered)
+                self._grid.addWidget(cell, r, c)
+
+        vbox = QtGui.QVBoxLayout()
+
+        # preview cell
+        self._preview = _PreviewCell()
+        vbox.addWidget(self._preview)
+
+        # text labels
+        self._labels = collections.OrderedDict()
+        self._labels["index"] = QtGui.QLabel("Index:")
+        self._labels["red"]   = QtGui.QLabel("Red:")
+        self._labels["green"] = QtGui.QLabel("Green:")
+        self._labels["blue"]  = QtGui.QLabel("Blue:")
+        for l in self._labels.itervalues():
+            vbox.addWidget(l)
+
+        vbox.addStretch()
+
+        hbox = QtGui.QHBoxLayout()
+        hbox.addLayout(self._grid)
+        hbox.addLayout(vbox)
+
+        self.setLayout(hbox)
+
+    def colors(self):
+        ret = {}
+        for idx in xrange(256):
+            color = self._grid.itemAt(idx).widget().color()
+            if color is not None:
+                ret[idx] = color
+        return ret
+
+    def _cellHovered(self, is_on):
+        color = self.sender().color()
+        if is_on and color:
+            self._labels["index"].setText("Index: %d" % self._grid.indexOf(self.sender()))
+            self._labels["red"].setText("Red: %d" % color.red())
+            self._labels["green"].setText("Green: %d" % color.green())
+            self._labels["blue"].setText("Blue: %d" % color.blue())
+            self._preview.setColor(color)
+        else:
+            self._labels["index"].setText("Index:")
+            self._labels["red"].setText("Red:")
+            self._labels["green"].setText("Green:")
+            self._labels["blue"].setText("Blue:")
+            self._preview.clearColor()
+
+
 if __name__ == "__main__":
     import sys
     import random
@@ -155,7 +231,10 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
     win = QtGui.QMainWindow()
-    win.setCentralWidget(IndexedColorPicker(colors=randcolors))
+    if False:
+        win.setCentralWidget(IndexedColorPicker(colors=randcolors))
+    else:
+        win.setCentralWidget(RGBPaletteEditor(colors=randcolors))
     win.setWindowTitle("Palette Widget")
     win.setWindowIcon(QtGui.QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"))
     win.show()
