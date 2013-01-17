@@ -183,49 +183,36 @@ images = [  ":/trolltech",
 
 app = QtGui.QApplication(sys.argv)
 win = QtGui.QMainWindow()
-s = QtGui.QScrollArea(win)
 
-WIDTH = 10
+def copyToClipboard():
+    app.clipboard().setText(QtCore.QObject.sender().toolTip())
 
-# I'd like to just add a grid layout as the main widget in a window or
-# scrollarea, but they seem to require widgets. So, I have to make a
-# wrapper widget here. Maybe there's a better way...
-class FW(QtGui.QWidget):
+grid = QtGui.QGridLayout()
+row = 0
+col = 0
+for idx, path in enumerate(filter(lambda p: p.endswith(".png"), images)):
+    tb = QtGui.QToolButton()
+    tb.setIcon(QtGui.QIcon(path))
+    tb.setToolTip(path)
+    tb.clicked.connect(copyToClipboard)
+    grid.addWidget(tb, row, col, 1, 1)
+    col += 1
+    if (col % 10) == 0:
+            col = 0
+	row += 1
 
-    def copyToClipboard(self):
-        text = self.sender().toolTip()
-        app.clipboard().setText(text)
+vbox = QtGui.QVBoxLayout()
+vbox.addWidget(QtGui.QLabel("Click a button to copy its path to the clip-board"))
+vbox.addLayout(grid)
 
-    def __init__(self):
-        QtGui.QWidget.__init__(self)
+w = QtGui.QWidget()
+w.setLayout(vbox)
+scrollarea = QtGui.QScrollArea(win)
+scrollarea.setWidget(w)
 
-        vbox = QtGui.QVBoxLayout(self)
-        txt = QtGui.QLabel("Click a button to copy its path to the clip-board")
-
-        g = QtGui.QGridLayout()
-
-        row = 0
-        col = 0
-        for idx, path in enumerate(filter(lambda p: p.endswith(".png"), images)):
-            w = QtGui.QToolButton()
-
-            w.setIcon(QtGui.QIcon(path))
-            w.setToolTip(path)
-            self.connect(w, QtCore.SIGNAL("clicked()"), self.copyToClipboard)
-
-            g.addWidget(w, row, col, 1, 1)
-
-            col += 1
-            if (col % WIDTH) == 0:
-                col = 0
-                row += 1
-
-        vbox.addWidget(txt)
-        vbox.addLayout(g)
-
-s.setWidget(FW())
-
-win.setCentralWidget(s)
-win.setWindowTitle("PyQT built-in icon browser")
+win.setCentralWidget(scrollarea)
+win.setWindowTitle("PyQT icon browser")
 win.show()
+win.resize(330, 530)
+
 sys.exit(app.exec_())
